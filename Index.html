@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>To Sanika - Split Layout Flipbook</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Indie Flower', cursive;
+            background: linear-gradient(to bottom right, #ffe0ec, #fceaff);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .book-wrapper {
+            width: 100%;
+            max-width: 1200px;
+            height: 90vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 1rem;
+        }
+
+        .cover,
+        .book {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cover {
+            flex-direction: column;
+            cursor: pointer;
+            animation: pulse 2s ease-in-out infinite;
+            text-align: center;
+
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .cover h1 {
+            font-size: 3rem;
+            color: #b93b6d;
+            animation: fadeIn 2s ease-in forwards;
+            text-shadow: 0 0 8px rgba(185, 59, 109, 0.3);
+            opacity: 0;
+        }
+
+        .cover p {
+            font-size: 1.3rem;
+            color: #333;
+            animation: floatIn 2.5s ease-in 0.5s forwards;
+            opacity: 0;
+        }
+
+        /* @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    } */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes floatIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .mute-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            background: #fff0f4;
+            border: 2px solid #ffb6c1;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: background 0.3s;
+        }
+
+        .mute-toggle:hover {
+            background: #ffe6ed;
+        }
+
+        .book {
+            display: none;
+        }
+
+        .page {
+            display: flex;
+            flex-direction: row;
+            width: 90%;
+            height: 100%;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+            position: absolute;
+            transition: transform 1s ease, opacity 1s ease;
+            backface-visibility: hidden;
+            overflow: hidden;
+            align-items: flex-start;
+            justify-content: center;
+            margin: auto;
+            left: 0;
+            right: 0;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .page.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .page .image {
+            width: 50%;
+            height: 100%;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .page .image img {
+            max-width: 90%;
+            max-height: 70%;
+            border: 12px solid #fff;
+            padding: 0.5rem;
+            background: #f4f4f4;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transform: rotate(-2deg);
+        }
+
+        .page .quote {
+            font-size: 1.1rem;
+            color: #c95b85;
+            margin-top: 1rem;
+            text-align: center;
+            font-style: italic;
+            padding: 0 1rem;
+        }
+
+        .page .text {
+            width: 50%;
+            height: 90%;
+            /* Ensures consistent height */
+            padding: 2rem;
+            overflow-y: scroll;
+            /* Always show scrollbar */
+            font-size: 1rem;
+            color: #5b2a4a;
+            line-height: 1.8;
+        }
+
+        .page .text::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .page .text::-webkit-scrollbar-track {
+            background: #fff0f5;
+            border-radius: 10px;
+        }
+
+        .page .text::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #fdaecb, #fbc2eb);
+            border-radius: 10px;
+            border: 2px solid #fff0f5;
+        }
+
+        .page .text::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #fa91b0, #f7a3d2);
+        }
+
+        .page .nav-buttons {
+            margin-top: auto;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 12px;
+        }
+
+        .page .nav-buttons button {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+            border: none;
+            color: white;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .heart {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: pink;
+            border-radius: 50%;
+            animation: float 6s linear infinite;
+            opacity: 0.6;
+            z-index: 0;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) scale(1);
+                opacity: 0.7;
+            }
+
+            100% {
+                transform: translateY(-10vh) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page {
+                flex-direction: column;
+            }
+
+            .page .image,
+            .page .text {
+                width: 100%;
+                height: auto;
+            }
+
+            .page .nav-buttons {
+                justify-content: center;
+                margin-top: 1rem;
+            }
+        }
+
+
+        .word-background {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .word {
+            position: absolute;
+            font-size: 2rem;
+            color: #d15884;
+            font-weight: 600;
+            opacity: 0;
+            white-space: nowrap;
+            text-shadow: 0 0 10px rgba(255, 182, 193, 0.6);
+            animation: drift 5s linear infinite, fadeInWord 2s ease-in forwards;
+            user-select: none;
+            filter: blur(1px);
+        }
+
+        @keyframes drift {
+            0% {
+                transform: translateY(0) translateX(0);
+            }
+
+            100% {
+                transform: translateY(-200%) translateX(15px);
+            }
+        }
+
+        @keyframes fadeInWord {
+            0% {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <audio id="flipSound" src="https://www.soundjay.com/misc/sounds/page-flip-4.mp3" preload="auto"></audio>
+    <audio id="bgMusic" src="bensound-love.mp3" autoplay loop></audio>
+
+    <div class="book-wrapper">
+
+        <div class="cover" id="cover">
+            <div class="word-background" id="floatingWords"></div>
+
+            <div class="mute-toggle" onclick="toggleMute()" id="muteBtn">🔊</div>
+
+            <img src="Sanika10.jpg" alt="Sanika"
+                style="max-width: 200px; border: 10px solid white; box-shadow: 0 6px 20px rgba(0,0,0,0.15); margin-bottom: 1.5rem; border-radius: 8px; opacity: 0.9;" />
+
+            <h1 style="animation-delay: 0.2s;">To Sanika</h1>
+            <p style="animation-delay: 0.5s;">A little book from someone who remembers everything...</p>
+            <p>Click to open a story from the heart...</p>
+        </div>
+
+        <div class="book" id="book"></div>
+    </div>
+
+    <script>
+        const book = document.getElementById('book');
+        const cover = document.getElementById('cover');
+        const flipSound = document.getElementById('flipSound');
+        const bgMusic = document.getElementById('bgMusic');
+        let current = 0;
+
+        const pagesData = [
+            { img: 'Sanika7.jpg', heading: 'This is not a goodbye...', text: 'So hey\n I dont know how to start but i have to say this today not gonna write a huge para 😅 So ya umm so this is or might be the last message from me as a person who loved you the most khudse jyada jise chaha. Uhh like others umm i am not letting you go kyuki vo sab karte hai mujhe lagata hai mai thoda alag hu or tha, i am not going to move on, i may not be texting you like before kyuki mai nahi chahta ki meri vajah se koi issue ho, but but i will respond you as quick as i can and you know how i am so dont hesitate to text or call, i might would not greet you in the morning and at night, but whenever i will go to sleep or woke up you will always be there in my mind and ofc heart.... And never think that i am gonna hate you never how can i hate the person who just made my happiest version come out and live.... Pichale kai mahino/sallo se mai bohot kush tha but ye pechale kuch mahine aur aage pata nahi kitane aisa lag raha hai ki kushi ke karje pure kar raha hu 😅' },
+            { img: 'Sanika9.jpg', heading: 'Two Years of Friendship ✨', text: 'My eyes always search for even though i know that you are not there. Like in the class when i go in ur batch my eyes search for you, when i see your friend circle went on a break my eyes search for you, my eyes search for u at the bus stop at Rajaram bridge my neck just turn towards the stop automatically 🤷‍♂️, my eyes search for you everywhere .... Kash tu ye pehale bata deti ki tu class chod ke Jane vali hai, kash tu ye bata deti ki ye Mera last din hai Aakhein taras gayi tujhe dekhane ke liye,Kash uss din tujhe jyada dekh liya hota.Mai tumhe kabhi bhulna nahi chahunga kyuki mujhe vo yaadein yaad rakhni hai jaha humne itani sari baatein ki, late night tumhari help ki, some moments you already know, those compliments, that shayari night that chatting and calling struggle because of network issue bhai kya hi struggle tha vo 😂, sharing secrets almost everything, umm and do u remember that i mistakenly deleted the chats with you thats day was the worst day for my life because tumhara jo bhi tha mere pass vo chats hi thi aur usse gava na thoda dukh bhara tha but when you said we will create all the chats again that time i got relief otherwise i was so sad.....' },
+            { img: 'Sanika2.jpg', heading: 'Just the Truth 💬', text: 'Umm Sanika i always tried to hold the conversation whenever you were like hmm i really dont know what to say next but still i used to text, whatever there were dry texts from you i used to get hurt 🤕 but still i used to text you try to make the conversation because for me ITS YOU ONLY so how can i leave you.....Sometimes your dry and cold texts made me feel like i am forcing you to talk but sometimes you were just amazing i really loved the way you talked to me shared things with me THANKYOU ❤️ Umm also i know jo log ek dusare se sacha pyar karte hai vahi log saath reh sakate hai aisa maine dialogue suna tha..... Also one incident when i asked you for a movie i thought you will say Yes but u just said aise anjan vaikiti ke sath kaise uff bhai aisa ghera ghava kar gaya vo bata nahi sakata tha par fhir bhi seh liya thoda apake liye..... One day we were just talking about red and green flags you were telling about that when you started the list of green and red flags i was just checking myself that i am checking all the green boxes how dumb me 😅.' },
+            { img: 'Sanika4.jpg', heading: 'In the Silence 🌸', text: 'And if one day you’re lost, I hope you look back on this and smile.\nBecause you were deeply loved — even if only silently.\n Also when you shared how u wanted to get married like the setup of your marriage the decorations, fireworks, multiple events mai pagal maan hi maan sab cheeze imagine aur manifest kar baitha ki for sure i will do it for YOU...... \nOne Request - Take Care....\nOne Wish - Dont Forget Me..\nOne Advice - Always Be Happy... \nOne Truth - I Always Love You.....' },
+            { img: 'Sanika5.jpg', heading: 'Your Honesty 💖', text: 'Uhh i never loved you by just by your looks only i just loved the soul you have your character that childish and cute i was fallen for that more than the looks, i was fallen for your smile, your eyes, your voice, uff words kam pad jayenge bhai..Umm i almost lost my Smile idk for how long but ya but seriously its totally fine because you are happy ☺️ Mujhe kahi na kahi aisa laga tha ki mai vo dar tumhare dil se nikal dunga by giving the love you deserve but something else is written.... So Congratulations my first and last crush to whom i have confessed..... Umm ya so saving reels in HER section might be go on i dont think it will but ya the section will be there, also i used to save the reels liked by you 🤷‍♂️😅..' },
+            { img: 'Sanika6.jpg', heading: 'Not Letting You Go 🌙', text: 'You know what literally i know everything how it works what can be the consequences what can be results know everything literally but still somewhere inside me I feel that ki Sushant dont let her go she might not get the love and care like i did but its ok. I guess its not WRITTEN so thik hai....I am not GIVING UP ON YOUU just i felt that ki mi he sagala kela pahijet or else its going to hurt me more and more so thats why i said not letting you gooo, not moving onnn.... I dreamed alot things with you literally before my dreams i thought about your dreams daily manifested those and i guess our dreams were same so i used to just trying to plan those things also......' },
+            { img: 'Sanika8.jpg', heading: 'I’m Still Here 💫', text: 'I’ll always be here. To celebrate you. To support you.\nTo be the one you can count on — no matter what life brings. \n  Talking about missing you 🥺 i literally missed you every second of my day thinking about you only. You were always running in my mind whole day i used say like thamb sanika thakshil ajun kiti 😅 You literally came for two times like first time you came and second time you never left my heart so yahi hai kuch..... Ok so there are alot things still there to say which are just in my heart but i dont want to make it so long and boring so ya thats alll from my side 🙌' },
+            { img: 'Sanika1.jpg', heading: 'You Taught Me ❤️', text: ' I’m signing off with peace. With gratitude. And with friendship —\nbecause that’s the part of me that’ll never leave you. \n So at the end....\nTake care And Stay Safe Please for Me... \nDont let anyone HURT YOU.....\nDont let anyone PLAY with YOU....\nDont TRUST anyone BLINDLY.....\nDont TELL anyone anything by saying that he or she will not tell because there is always someone more important person than you to whom they tell... (Example - You shared about ur job with your best friends with that shapat but i guess they didnt kept it. I am telling this because i got to know about you from Chetan and Namrata that you got a job as a fresher.... So be Careful..)\nDont worry i am not like that because for me that important person was YOU so i never share things... \nI am Always there for you Just text and dont unsend the messages, if u would do that it will hurt me more JUST TEXT ME...I will always be the first person who will appreciate you, compliment you, and tell you how good you are, Also i guess i can give motivation also so i am also there for you... \nDont think about me ki if tu jar mazyashi boli nhis trr mala trass, hurt hoil reply nahi dila tari chalel its fine or else dont take of replying me as a burden which i will never loved to be a burden on someone...\nI hope you are understanding what i want to say.\nJUST BE HONEST AND TRUE WHILE TEXTING DONT FEEL LIKE ANYTHING..\nHey Sanu....\nThe person who loved you the most is just Signing Off ❤️ \nI love you forever 🤞'},
+            { img: 'Sanika3.jpg', heading: 'With Peace & Friendship 🤍', text: 'Thank you for being Sanika — the one who unknowingly taught me what love can be,\neven when it isn’t returned. \n We will Always Be a Good Best Friends 😊 never think about ki mi bolnar nahi asa tasa just text me i will reply you... \nYour chats in WhatsApp and insta are pinned so not gonna miss your texts.....\n And also vo list Bana ke rakho kya pata kab vo din aajaye.....'},
+            {
+  img: "Sushant.jpg",
+  heading: "— Yours, always.",
+  text: `
+    <div style="font-size: 1.3rem; line-height: 2; text-align: center;">
+      Thank you for turning these pages with me.
+      For being a part of my story.
+      No matter where life takes us...
+      I'll always carry this chapter with peace, gratitude, and love.
+      <span style="font-size: 2rem; color: #c95b85;">— Yours, always, Sushant 💌</span>
+      <button onclick="goToCover()" style="margin-top: 2rem; padding: 10px 20px; background: #ffbad2; border: none; border-radius: 10px; font-family: 'Indie Flower'; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+       🥰 Restart Story
+      </button>
+    </div>  
+  `
+}
+
+        ];
+
+        const pages = pagesData.map((data) => {
+            const page = document.createElement('div');
+            page.classList.add('page');
+            page.innerHTML = `
+        <div class="image">
+          <img src="${data.img}" />
+          <div class="quote">${data.heading || ''}</div>
+          <div class="nav-buttons">
+            <button onclick="prevPage()">◀ Prev</button>
+            <button onclick="nextPage()">Next ▶</button>
+          </div>
+        </div>
+        <div class="text">${data.text.replace(/\n/g, '<br>')}</div>
+      `;
+            book.appendChild(page);
+            return page;
+        });
+        
+
+        // Listen for clicks only on cover background (not mute icon)
+        cover.addEventListener("click", function (e) {
+            if (!e.target.closest("#muteBtn")) {
+                openBook();
+            }
+        });
+
+        function openBook() {
+            // Only try to play if it's not already playing
+            if (bgMusic.paused) {
+                bgMusic.play().catch((err) => {
+                    console.warn("Autoplay failed:", err);
+                });
+            }
+
+            cover.style.display = 'none';
+            book.style.display = 'block';
+            showPage(current);
+        }
+
+
+        function toggleMute() {
+            bgMusic.muted = !bgMusic.muted;
+            document.getElementById("muteBtn").textContent = bgMusic.muted ? "🔇" : "🔊";
+        }
+
+
+        function showPage(index) {
+            pages.forEach((page, i) => {
+                page.classList.remove('active');
+                if (i === index) page.classList.add('active');
+            });
+        }
+
+        function nextPage() {
+            if (current < pages.length - 1) {
+                current++;
+                flipSound.play();
+                showPage(current);
+            }
+        }
+
+        function prevPage() {
+            if (current > 0) {
+                current--;
+                flipSound.play();
+                showPage(current);
+            } else {
+                book.style.display = 'none';
+                cover.style.display = 'flex';
+                current = 0;
+            }
+        }
+
+        function goToCover() {
+    book.style.display = 'none';
+    cover.style.display = 'flex';
+    current = 0;
+    showPage(current);
+}
+
+
+        setInterval(() => {
+            const heart = document.createElement('div');
+            heart.classList.add('heart');
+            heart.style.left = Math.random() * 100 + "vw";
+            heart.style.background = ["#ff6b81", "#ff9aa2", "#fbc2eb"][Math.floor(Math.random() * 3)];
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 6000);
+        }, 400);
+
+        const wordList = [
+            "Sanu 🥰", "Nanu", "Miss", "Madam", "Butterfly 🦋", "Memories", "Always ✌", "Sanika ❤", "Forever 🤞", "Flute 💗"
+            //   , "Smile","Love", "Hope", "Kindness", "Laughter", "Us",
+            //   "Dreams", "Magic", "You", "Moments"
+        ];
+
+        const wordContainer = document.getElementById("floatingWords");
+
+        for (let i = 0; i < 40; i++) {
+            const span = document.createElement("span");
+            span.className = "word";
+            span.textContent = wordList[Math.floor(Math.random() * wordList.length)];
+            span.style.left = Math.random() * 100 + "%";
+            span.style.top = Math.random() * 100 + "%";
+            span.style.fontSize = 1 + Math.random() * 1.5 + "rem";
+            span.style.animationDelay = Math.random() * 30 + "s";
+            wordContainer.appendChild(span);
+        }
+
+    </script>
+</body>
+
+</html>
